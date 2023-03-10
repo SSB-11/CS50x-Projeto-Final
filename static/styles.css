@@ -1,0 +1,36 @@
+#add {
+    min-width: 100%;
+}
+
+#cadastro, #login, #new-password {
+    max-width: 33%;
+}
+
+input[type="number"] {
+    max-width: 50%;
+}
+
+#sobre h2 {
+    margin-bottom: 1rem;
+    margin-top: 1.5rem;
+}
+
+.navbar-dark .navbar-nav .nav-link, #config {
+    color: rgba(255,255,255,0.8) !important;
+}
+
+.navbar-dark .navbar-nav .nav-link:hover, #config:hover {
+    color: rgba(255,255,255) !important;
+}
+
+.navbar-dark .navbar-toggler {
+    border-color: rgba(255,255,255,0.8);
+}
+
+.green {
+    color: green;
+}
+
+select {
+    max-width: fit-content;
+}

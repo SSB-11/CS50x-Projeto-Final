@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Cadastre-se
+{% endblock %}
+
+{% block main %}
+    <section class="container">
+        <div class="mb-4">
+            <h1>Cadastre-se</h1>
+        </div>
+        <form action="/cadastro" class="m-auto" id="cadastro" method="post">
+            <div class="mb-3">
+                <input {{ username_attribute }} autocomplete="off" class="form-control mx-auto w-auto" id="username" name="username" 
+                    placeholder="Usuário" type="text" value="{{ username }}">
+            </div>
+            <div class="mb-3">
+                <input {{ password_attribute }} class="form-control mx-auto w-auto" name="password" placeholder="Senha" type="password">
+            </div>
+            <div class="mb-3">
+                <input class="form-control mx-auto w-auto" name="confirm-password" placeholder="Confirme sua senha" type="password">
+            </div>
+            <button class="btn btn-outline-dark" type="submit">Criar conta</button> 
+        </form>
+    </section>
+
+{% endblock %}
+
+{% block footer %}
+    <h6>Já tem um cadastro? Faça o <a href="/login">login</a>.</h6>
+{% endblock %}

@@ -1,0 +1,67 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    {{ titulo|default("Adicionar", True) }}
+{% endblock %}
+
+{% block main %}
+    <h1 class="mb-4">{{ titulo|default("Adicionar", True) }} {{ selecionado|truncate(4, True, "", 0) }}</h1>
+
+    {% if titulo %}
+        <form action="/atualizar" id="adicionar" method="post">
+    {% else %}
+        <form action="/adicionar" id="adicionar" method="post">
+    {% endif %}
+        <div class="text-nowrap text-left">
+            <label for="name"><h3 class="mb-1">Nomear como:</h3></label>
+        </div>
+        {% if selecionado == "Notas" %}
+            <input autofocus autocomplete="off" class="form-control mb-3" id="name" name="name" placeholder="Ex.: ENEM 2022; Meta ENEM 2023; ..." type="text" value="{{ notas.nome if notas }}">
+        {% elif selecionado == "Pesos" %}
+            <input autofocus autocomplete="off" class="form-control mb-3" id="name" name="name" placeholder="Ex.: Engenharia Poli USP; Engenharia de Computação UFU; ..." type="text" value="{{ pesos.curso if pesos }}">
+        {% endif %}
+        <table class="border-dark table table-striped">
+            <tr>
+                <th>Área de Conhecimento</th>
+                <th>{{ selecionado|truncate(4, True, "", 0) }}</th> 
+            </tr>
+            {% for materia in materias %}
+            <tr>
+                {% if materia == "lin" %}
+                    <td>Linguagens, Códigos e suas Tecnologias</td>
+                {% elif materia == "hum" %}
+                    <td>Ciências Humanas e suas Tecnologias</td>
+                {% elif materia == "nat" %}
+                    <td>Ciências da Natureza e suas Tecnologias</td>
+                {% elif materia == "mat" %}
+                    <td>Matemática e suas Tecnologias</td>
+                {% elif materia == "red" %}
+                    <td>Redação</td>
+                {% endif %}
+
+                {% if selecionado == "Notas" %}
+                    <td><input class="border-dark form-control mx-auto" id="nota-{{ materia }}" min="0" max="1000" name="nota-{{ materia }}" placeholder="Ex.: 1000" step="0.1" type="number" value="{{ notas[materia] if notas }}"></td>
+                {% elif selecionado == "Pesos" %}
+                    <td><input class="border-dark form-control mx-auto" id="peso-{{ materia }}" min="1" max="10" name="peso-{{ materia }}" step="0.5" type="number" value="{{ pesos[materia] if pesos else ''|default(1, True) }}"></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </table>
+        
+        {% if notas %}
+            <input name="nome-anterior" type="hidden" value="{{ notas.nome }}">
+        {% elif pesos %}
+            <input name="nome-anterior" type="hidden" value="{{ pesos.curso }}">
+        {% endif %}
+        
+        <button class="btn btn-outline-dark" id="salvar" name="selecionado" type="submit" value="{{ selecionado }}">{{ "Confirmar" if titulo else ""|default("Salvar", True) }}</button>
+        {% if titulo %}
+            <a class="btn btn-outline-dark" href="/notas-e-pesos" id="cancelar">Cancelar</a>
+        {% endif %}
+        <button class="btn btn-outline-dark" id="limpar" type="reset">Limpar</button>
+    </form>
+{% endblock %}
+
+{% block footer %}
+    <script type="module" src="/static/adicionar.js"></script>
+{% endblock %}

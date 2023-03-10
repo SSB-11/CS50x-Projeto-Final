@@ -1,0 +1,57 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Calculadora
+{% endblock %}
+
+{% block main %}
+    <h1 class="mb-5">Calcule sua média do ENEM</h1>
+
+    <form action="/" id="calculadora">
+        <table class="border-dark table table-striped">
+            <tr>
+                <th>Área de Conhecimento</th>
+                <th>Nota</th>
+                <th>Peso</th>
+            </tr>
+            {% for materia in materias %}
+            <tr>
+                {% if materia == "lin" %}
+                    <td>Linguagens, Códigos e suas Tecnologias</td>
+                {% elif materia == "hum" %}
+                    <td>Ciências Humanas e suas Tecnologias</td>
+                {% elif materia == "nat" %}
+                    <td>Ciências da Natureza e suas Tecnologias</td>
+                {% elif materia == "mat" %}
+                    <td>Matemática e suas Tecnologias</td>
+                {% elif materia == "red" %}
+                    <td>Redação</td>
+                {% endif %}
+                <td><input class="border-dark form-control mx-auto" id="nota-{{ materia }}" min="0" max="1000" name="nota-{{ materia }}" placeholder="Ex.: 1000" step="0.1" type="number"></td>
+                <td><input class="border-dark form-control mx-auto" id="peso-{{ materia }}" min="1" max="10" name="peso-{{ materia }}" placeholder="Peso" step="0.5" type="number" value="1"></td>
+            </tr>
+            {% endfor %}
+        </table>
+
+        <button class="btn btn-outline-dark" id="calcular" type="submit">Calcular</button>
+        <button class="btn btn-outline-dark" id="limpar" type="reset">Limpar</button>
+    </form>
+
+    <section class="container mt-4">
+        <h2 id="resultado-ponderado"></h2>
+        <h2 id="resultado-simples"></h2>
+        <button class="btn btn-outline-dark d-none mt-2" id="salvar-resultado" type="button">Salvar resultado</button>
+    </section>
+
+{% endblock %}
+
+{% block footer %}   
+    {% if not session["user_id"] %}
+        <h5 class="mb-4">Quer salvar suas notas, resultados e pesos dos cursos que te interessam? <a href="/cadastro">
+        Cadastre-se</a> ou faça o <a href="/login">login</a>!</h5>
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+    <script type="module" src="/static/script.js"></script>
+{% endblock %}
