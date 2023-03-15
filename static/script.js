@@ -22,13 +22,6 @@ function calcularMediaPonderada() {
     return (Math.round(somaNotas * 100 / somaPesos) / 100).toFixed(2);
 }
 
-// Limpar resultado
-function limparResult() {
-    document.getElementById("resultado-simples").innerHTML = "";
-    document.getElementById("resultado-ponderado").innerHTML = "";
-    document.getElementById("salvar-resultado").classList.add("d-none");
-}
-
 // Calcular média quanto o botão for clicado
 document.getElementById("calculadora").addEventListener("submit", function(e){
 
@@ -51,10 +44,32 @@ document.getElementById("calculadora").addEventListener("submit", function(e){
     document.getElementById("resultado-ponderado").innerHTML = `Média ponderada: ${mediaPonderada}`;
     document.getElementById("salvar-resultado").classList.remove("d-none");
     
+    // Salvar média final para o usuário poder salvar o resultado
+    document.querySelector("form[action='/resultados'] input[name='simples']").value = mediaSimples;
+    document.querySelector("form[action='/resultados'] input[name='ponderado']").value = mediaPonderada;
+
+    // Atualizar valor de notas e pesos conforme digitado na calculadora
+    for (let materia of materias) {
+        document.getElementById(`nota_${materia}`).value = notas[materia];
+        document.getElementById(`peso_${materia}`).value = pesos[materia];
+    }
+
     return;
 });
 
 // Limpar tudo (notas e pesos)
 document.getElementById("limpar").addEventListener("click", function() {
-    limparResult();
-})
+    window.location.replace("/");
+    return;
+});
+
+// Nomear resultado
+document.getElementById("salvar-resultado").addEventListener("click", function(e) {
+    let nome = undefined;
+    do {
+        nome = prompt("Como gostaria de nomear resultado?");
+    } while (!nome);
+
+    document.querySelector("form[action='/resultados'] input[name='nome']").value = nome;
+    return;
+});

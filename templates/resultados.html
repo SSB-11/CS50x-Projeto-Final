@@ -1,0 +1,85 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Resultados
+{% endblock %}
+
+{% block main %}
+    <h1>Resultados</h1>
+
+    <a class="btn btn-outline-secondary mt-5" href="/" id="add">+ Adicionar Resultados</a>
+
+    {% if rows %}
+        {% for row in rows %}
+            <h3 class="mt-4 mb-3 text-left">{{ row.nome }}:</h3>
+            <table class="table table-striped">
+                
+                <thead class="bg-dark text-light">
+                    <tr>    
+                        <th>Área de Conhecimento</th>
+                        <th class="pr-5">Nota</th>
+                        <th class="pr-5">Peso</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for materia in materias %}
+                    {% set nota = "nota_{}".format(materia) %}
+                    {% set peso = "peso_{}".format(materia) %}
+                    
+                    <tr>
+                        {% if materia == "lin" %}
+                        <td>Linguagens, Códigos e suas Tecnologias</td>
+                        {% elif materia == "hum" %}
+                        <td>Ciências Humanas e suas Tecnologias</td>
+                        {% elif materia == "nat" %}
+                        <td>Ciências da Natureza e suas Tecnologias</td>
+                        {% elif materia == "mat" %}
+                        <td>Matemática e suas Tecnologias</td>
+                        {% elif materia == "red" %}
+                        <td>Redação</td>
+                        {% endif %}
+                        
+                        <td class="pr-5">{{ row[nota] }}</td>
+                        <td class="pr-5">{{ row[peso] }}</td>
+                        
+                    </tr>
+                    {% endfor %}
+                </tbody>
+
+                <tfoot class="bg-dark text-light">
+                    <tr class="bold">
+                        <td>Média Ponderada</td>
+                        <td colspan="2">{{ row.ponderado }}</td>
+                    </tr>
+                    <tr>
+                        <td class="bold">Média Simples</td>
+                        <td colspan="2">{{ row.simples }}</td>
+                    </tr>
+                </tfoot>
+
+            </table>
+                
+                <div class="d-flex justify-content-center mb-4">    
+                
+                <form action="/" class="mr-2" method="post">
+                    <input name="selecionado" type="hidden" value="Resultados">
+                    <button class="btn btn-outline-dark" name="nome" type="submit" value="{{ row.nome }}">Calcular média</button>
+                </form>
+
+                <form action="/excluir" onsubmit="return confirm('Tem certeza que deseja excluir?');" method="post">
+                    <input name="nome" type="hidden" value="{{ row.nome }}">
+                    <button class="btn btn-outline-dark" id="excluir" name="selecionado" type="submit" value="{{ selecionado }}">Excluir</button>
+                </form> 
+                
+            </div>
+        {% endfor %}
+    {% endif %}
+{% endblock %}
+
+{% block footer %}
+    {% if not rows %}
+        <h5>Ainda não há nada aqui! <br>Calcule médias e <span class="green">adicione</span> os resultados para visualizá-los.</h5>
+    {% endif %}
+{% endblock %}
+

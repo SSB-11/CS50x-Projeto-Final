@@ -35,15 +35,28 @@ CREATE TABLE pesos (
         REFERENCES users (id)
 );
 
+-- OK
+CREATE TABLE resultados (
+    user_id   INTEGER NOT NULL,
+    nome      TEXT    NOT NULL,
+    
+    nota_lin  REAL,
+    nota_hum  REAL,
+    nota_nat  REAL,
+    nota_mat  REAL,
+    nota_red  REAL,
+    
+    peso_lin  REAL,
+    peso_hum  REAL,
+    peso_nat  REAL,
+    peso_mat  REAL,
+    peso_red  REAL,
 
-CREATE TABLE results (
-    user_id INTEGER NOT NULL,
-    curso   INTEGER NOT NULL,
+    simples   REAL,
+    ponderado REAL,
 
     FOREIGN KEY (user_id)
-        REFERENCES users (id),
-    FOREIGN KEY (curso)
-        REFERENCES pesos (curso)
+        REFERENCES users (id)
 );
 
 

@@ -35,38 +35,47 @@
                     {% endif %}
                     <table class="border-dark table table-striped">
 
-                        <tr>
-                            <th>Área de Conhecimento</th>
-                            <th class="pr-5">{{ selecionado|truncate(4, True, "", 0) }}</th>
-                        </tr>
+                        <thead class="bg-dark text-light">    
+                            <tr>
+                                <th>Área de Conhecimento</th>
+                                <th class="pr-5">{{ selecionado|truncate(4, True, "", 0) }}</th>
+                            </tr>
+                        </thead>
 
-                        {% for materia in materias %}
+                        <tbody>
+                            {% for materia in materias %}
                             {% set nota = "nota_{}".format(materia) %}
                             {% set peso = "peso_{}".format(materia) %}
-
+                            
                             <tr>
                                 {% if materia == "lin" %}
-                                    <td>Linguagens, Códigos e suas Tecnologias</td>
+                                <td>Linguagens, Códigos e suas Tecnologias</td>
                                 {% elif materia == "hum" %}
-                                    <td>Ciências Humanas e suas Tecnologias</td>
+                                <td>Ciências Humanas e suas Tecnologias</td>
                                 {% elif materia == "nat" %}
-                                    <td>Ciências da Natureza e suas Tecnologias</td>
+                                <td>Ciências da Natureza e suas Tecnologias</td>
                                 {% elif materia == "mat" %}
-                                    <td>Matemática e suas Tecnologias</td>
+                                <td>Matemática e suas Tecnologias</td>
                                 {% elif materia == "red" %}
-                                    <td>Redação</td>
+                                <td>Redação</td>
                                 {% endif %}
-
+                                
                                 {% if selecionado == "Notas" %}
-                                    <td class="pr-5">{{ row[nota] }}</td>
+                                <td class="pr-5">{{ row[nota] }}</td>
                                 {% elif selecionado == "Pesos" %}
-                                    <td class="pr-5">{{ row[peso] }}</td>
+                                <td class="pr-5">{{ row[peso] }}</td>
                                 {% endif %}
                             </tr>
-                        {% endfor %}
+                            {% endfor %}
+                        </tbody>
                     </table>
-
+                        
                     <div class="d-flex justify-content-center mb-4">    
+                        <form action="/" class="mr-2" method="post">
+                            <input name="selecionado" type="hidden" value="{{ selecionado }}">
+                            <button class="btn btn-outline-dark" name="nome" type="submit" value="{{ row.nome if selecionado == 'Notas' else row.curso }}">{{ "Usar nota" if selecionado == "Notas" else "Usar peso"}}</button>
+                        </form>
+                        
                         <form action="/alterar" class="mr-2" method="post">
                                 
                             {% if selecionado == "Notas" %}

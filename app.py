@@ -41,11 +41,67 @@ def inject_variables():
     return dict(materias=MATERIAS, usuario=usuario)
 
 
-@app.route("/")
+@app.route("/", methods=["GET", "POST"])
 def index():
     """Calculadora ENEM"""
-    return render_template("index.html")
+    if request.method == "POST":
+         
+        # Usuário precisa estar logado
+        try:
+            user_id = session["user_id"]
+        except:
+            flash("Você precisa estar logado.", "error")
+            return render_template("index.html")
 
+        # Carregar e guardar dados
+        selecionado = request.form.get("selecionado")
+        nome = request.form.get("nome")
+        
+        notas = {}
+        pesos = {}
+
+        if selecionado == "Notas":
+            rows = db.execute("SELECT * FROM notas WHERE nome = ? AND user_id = ?", nome, user_id)
+            for materia in MATERIAS:
+                nota = f"nota_{materia}"
+                notas[nota] = rows[0][nota]
+                session["notas"] = notas
+                if not "pesos" in session:
+                    session["pesos"] = pesos
+
+        elif selecionado == "Pesos":
+            rows = db.execute("SELECT * FROM pesos WHERE curso = ? AND user_id = ?", nome, user_id)
+            for materia in MATERIAS:
+                peso = f"peso_{materia}"
+                pesos[peso] = rows[0][peso]
+                if not "notas" in session:
+                    session["notas"] = notas
+                session["pesos"] = pesos
+
+        elif selecionado == "Resultados":
+            rows = db.execute("SELECT * FROM resultados WHERE nome = ? AND user_id = ?", nome, user_id)
+            for materia in MATERIAS:
+                nota = f"nota_{materia}"
+                peso = f"peso_{materia}"
+                notas[nota] = rows[0][nota]
+                pesos[peso] = rows[0][peso]
+
+        # Store/update data in Cookies for later use
+        if notas:
+            session["notas"] = notas
+        if pesos:
+            session["pesos"] = pesos
+
+        return render_template("index.html", notas=session["notas"], pesos=session["pesos"])
+
+    # If requested via GET, reset notas e pesos
+    if session:
+        if "notas" in session:
+            session.pop("notas")
+        if "pesos" in session:
+            session.pop("pesos")
+
+    return render_template("index.html")
 
 @app.route("/adicionar", methods=["POST"])
 @login_required
@@ -277,6 +333,19 @@ def excluir():
             return redirect("/notas-e-pesos")
         db.execute("DELETE FROM pesos WHERE user_id = ? AND curso = ?", user_id, nome)
         flash("Peso excluído.", "success")
+
+    # Excluir resultado
+    else:
+        if db.execute("SELECT * FROM resultados WHERE user_id = ? AND nome = ?", user_id, nome):
+            db.execute("DELETE FROM resultados WHERE user_id = ? AND nome = ?", user_id, nome)
+            flash("Resultado excluído.", "success")
+
+            # Carregar dados e redirect to /resultados
+            rows = db.execute("SELECT * FROM resultados WHERE user_id = ?", user_id)
+            return render_template("resultados.html", rows=rows)
+        else:
+            flash("Não foi possível encontrar resultado.", "error")
+            return redirect("/resultados")
     
     # Carregar dados e redirect to /notas-e-pesos
     rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
@@ -391,6 +460,55 @@ def nova_senha():
             render_template("login.html", username_attribute="autofocus")
 
     return render_template("nova-senha.html", username_attribute="autofocus")
+
+
+@app.route("/resultados", methods=["GET", "POST"])
+@login_required
+def resultados():
+    """Salvar resultados e carregar resultados salvos."""
+    if request.method == "POST":
+
+        # Carregar dados
+        nome = request.form.get("nome")
+        notas = {}
+        pesos = {}
+        for materia in MATERIAS:
+            nota = f"nota_{materia}"
+            peso = f"peso_{materia}"
+            notas[nota] = request.form.get(nota)
+            pesos[peso] = request.form.get(peso)
+        simples = request.form.get("simples")
+        ponderado = request.form.get("ponderado")
+        user_id = session["user_id"]
+
+        # Não pode haver resultados salvos com mesmo nome
+        if db.execute("SELECT * FROM resultados WHERE nome = ? AND user_id = ?", nome, user_id):
+            flash("Resultado já existe.", "error")
+            return render_template("index.html")
+        
+        # Salvar resultados na base de dados
+        try:
+            db.execute("INSERT INTO resultados (user_id, nome) VALUES (?, ?)", user_id, nome)
+            db.execute("UPDATE resultados SET simples = ? WHERE user_id = ? AND nome = ?", simples, user_id, nome)
+            db.execute("UPDATE resultados SET ponderado = ? WHERE user_id = ? AND nome = ?", ponderado, user_id, nome)
+            for materia in MATERIAS:
+                nota = f"nota_{materia}"
+                peso = f"peso_{materia}"
+
+                db.execute("UPDATE resultados SET ? = ? WHERE user_id = ? AND nome = ?", nota, notas[nota], user_id, nome)
+                db.execute("UPDATE resultados SET ? = ? WHERE user_id = ? AND nome = ?", peso, pesos[peso], user_id, nome)
+            flash("Resultado salvo.", "success")
+        except:
+            flash("Há dados inválidos.", "error")
+            return render_template("index.html")
+
+        # Carregar resultados na página
+        rows = db.execute("SELECT * FROM resultados WHERE user_id = ?", user_id)
+        return render_template("resultados.html", rows=rows)
+
+    # Carregar resultados na página
+    rows = db.execute("SELECT * FROM resultados WHERE user_id = ?", session["user_id"])
+    return render_template("resultados.html", rows=rows)
 
     
 @app.route("/sobre-o-enem")

@@ -1,3 +1,7 @@
+.table-striped>tbody>tr:nth-child(odd)>td {
+   background-color: rgba(141, 142, 144, 0.1);
+ }
+
 #add {
     min-width: 100%;
 }
@@ -16,19 +20,23 @@ input[type="number"] {
 }
 
 .navbar-dark .navbar-nav .nav-link, #config {
-    color: rgba(255,255,255,0.8) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
 }
 
 .navbar-dark .navbar-nav .nav-link:hover, #config:hover {
-    color: rgba(255,255,255) !important;
+    color: rgba(255, 255, 255) !important;
 }
 
 .navbar-dark .navbar-toggler {
-    border-color: rgba(255,255,255,0.8);
+    border-color: rgba(255, 255, 255, 0.8);
 }
 
 .green {
     color: green;
+}
+
+.bold {
+    font-weight: bold;
 }
 
 select {
