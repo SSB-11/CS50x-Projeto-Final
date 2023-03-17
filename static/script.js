@@ -23,7 +23,7 @@ function calcularMediaPonderada() {
 }
 
 // Calcular média quanto o botão for clicado
-document.getElementById("calculadora").addEventListener("submit", function(e){
+document.getElementById("calculadora").addEventListener("submit", function(e) {
 
     // Prevenir que a página recarrege
     e.preventDefault();
@@ -64,12 +64,16 @@ document.getElementById("limpar").addEventListener("click", function() {
 });
 
 // Nomear resultado
-document.getElementById("salvar-resultado").addEventListener("click", function(e) {
-    let nome = undefined;
-    do {
-        nome = prompt("Como gostaria de nomear resultado?");
-    } while (!nome);
-
-    document.querySelector("form[action='/resultados'] input[name='nome']").value = nome;
-    return;
-});
+try {
+    document.getElementById("salvar-resultado").addEventListener("click", function() {
+        let nome = undefined;
+        do {
+            nome = prompt("Como gostaria de nomear resultado?");
+        } while (!nome);
+    
+        document.querySelector("form[action='/resultados'] input[name='nome']").value = nome;
+        return;
+    });
+} catch {
+    // Do nothing if salvar-resultado doesn't exist
+}

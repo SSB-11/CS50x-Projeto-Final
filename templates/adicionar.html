@@ -58,7 +58,9 @@
         {% if titulo %}
             <a class="btn btn-outline-dark" href="/notas-e-pesos" id="cancelar">Cancelar</a>
         {% endif %}
+        {% if not titulo %}
         <button class="btn btn-outline-dark" id="limpar" type="reset">Limpar</button>
+        {% endif %}
     </form>
 {% endblock %}
 

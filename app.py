@@ -60,6 +60,7 @@ def index():
         notas = {}
         pesos = {}
 
+        # Carregar notas
         if selecionado == "Notas":
             rows = db.execute("SELECT * FROM notas WHERE nome = ? AND user_id = ?", nome, user_id)
             for materia in MATERIAS:
@@ -69,6 +70,7 @@ def index():
                 if not "pesos" in session:
                     session["pesos"] = pesos
 
+        # Carregar pesos
         elif selecionado == "Pesos":
             rows = db.execute("SELECT * FROM pesos WHERE curso = ? AND user_id = ?", nome, user_id)
             for materia in MATERIAS:
@@ -78,6 +80,7 @@ def index():
                     session["notas"] = notas
                 session["pesos"] = pesos
 
+        # Carregar resultados
         elif selecionado == "Resultados":
             rows = db.execute("SELECT * FROM resultados WHERE nome = ? AND user_id = ?", nome, user_id)
             for materia in MATERIAS:
@@ -102,6 +105,7 @@ def index():
             session.pop("pesos")
 
     return render_template("index.html")
+
 
 @app.route("/adicionar", methods=["POST"])
 @login_required
@@ -180,37 +184,50 @@ def alterar():
 
     # Saber se é para alterar nota ou peso
     selecionado = request.form.get("selecionado")
+    if not selecionado:
+        try:
+            selecionado = session["selecionado"]
+        except:
+            flash("Favor selecione Notas ou Pesos", "error")
+            return render_template("notas-e-pesos.html")
+
     user_id = session["user_id"]
     notas = {}
     pesos = {}
     
-    # Carregar dados a serem alterados (Notas)
-    if selecionado == "Notas":
-        notas["nome"] = request.form.get("nome")
-        rows = db.execute("SELECT * FROM notas WHERE user_id = ? AND nome = ?", user_id, notas["nome"])
+    if request.method == "POST":
+
+        # Carregar dados a serem alterados (Notas)
+        if selecionado == "Notas":
+            notas["nome"] = request.form.get("nome")
+            rows = db.execute("SELECT * FROM notas WHERE user_id = ? AND nome = ?", user_id, notas["nome"])
+            
+            # Nota precisa estar na base de dados
+            if not rows:
+                flash("Nota não encontrada.", "error")
+                rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
+                return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
         
-        if not rows:
-            flash("Nota não encontrada.", "error")
-            rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
-            return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
-       
-        for materia in MATERIAS:
-            notas[materia] = rows[0][f"nota_{materia}"]
+            for materia in MATERIAS:
+                notas[materia] = rows[0][f"nota_{materia}"]
 
-    # Carregar dados a serem alterados (Pesos)
-    elif selecionado == "Pesos":
-        pesos["curso"] = request.form.get("nome")
-        rows = db.execute("SELECT * FROM pesos WHERE user_id = ? AND curso = ?", user_id, pesos["curso"])
+        # Carregar dados a serem alterados (Pesos)
+        elif selecionado == "Pesos":
+            pesos["curso"] = request.form.get("nome")
+            rows = db.execute("SELECT * FROM pesos WHERE user_id = ? AND curso = ?", user_id, pesos["curso"])
 
-        if not rows:
-            flash("Peso não encontrado.", "error")
-            rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
-            return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
+            # Peso precisa estar na base de dados
+            if not rows:
+                flash("Peso não encontrado.", "error")
+                rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
+                return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
 
-        for materia in MATERIAS:
-            pesos[materia] = rows[0][f"peso_{materia}"]
+            for materia in MATERIAS:
+                pesos[materia] = rows[0][f"peso_{materia}"]
 
-    return render_template("adicionar.html", titulo="Alterar", notas=notas, pesos=pesos, selecionado=selecionado)
+        return render_template("adicionar.html", titulo="Alterar", notas=notas, pesos=pesos, selecionado=selecionado)
+
+    return render_template("adicionar.html", titulo="Alterar", selecionado=session["selecionado"])
 
 
 @app.route("/atualizar", methods=["POST"])
@@ -241,11 +258,13 @@ def atualizar():
     pesos = {}
     nome = request.form.get("name")
 
+    # Guardar notas
     if selecionado == "Notas":
         for materia in MATERIAS:
             nota_materia = f"nota-{materia}"
             notas[materia] = request.form.get(nota_materia)
 
+    # Guardar pesos
     elif selecionado == "Pesos":
         for materia in MATERIAS:
             peso_materia = f"peso-{materia}"
@@ -255,14 +274,17 @@ def atualizar():
     if selecionado == "Notas":
         for materia in MATERIAS:
             nota_materia = f"nota_{materia}"
-            db.execute("UPDATE notas SET ? = ? WHERE user_id = ? AND nome = ?", nota_materia, notas[materia], user_id, nome_anterior)
+            db.execute("UPDATE notas SET ? = ? WHERE user_id = ? AND nome = ?", 
+                        nota_materia, notas[materia], user_id, nome_anterior)
         db.execute("UPDATE notas SET nome = ? WHERE user_id = ? AND nome = ?", nome, user_id, nome_anterior)
     elif selecionado == "Pesos":
         for materia in MATERIAS:
             peso_materia = f"peso_{materia}"
-            db.execute("UPDATE pesos SET ? = ? WHERE user_id = ? AND curso = ?", peso_materia, pesos[materia], user_id, nome_anterior)
+            db.execute("UPDATE pesos SET ? = ? WHERE user_id = ? AND curso = ?", 
+                        peso_materia, pesos[materia], user_id, nome_anterior)
         db.execute("UPDATE pesos SET curso = ? WHERE user_id = ? AND curso = ?", nome, user_id, nome_anterior)
 
+    # Se nenhum erro, dados alterados com sucesso
     flash("Dados alterados.", "success")    
     rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
     return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
@@ -407,12 +429,15 @@ def notas_e_pesos():
         if selecionado not in ["Notas", "Pesos"]:
             flash("Favor selecionar Notas ou Pesos.", "error")
             return render_template("notas-e-pesos.html")
+        session["selecionado"] = selecionado
 
         # Load data from database
         rows = db.execute("SELECT * FROM ? WHERE user_id = ?", selecionado.lower(), session["user_id"])
         return render_template("notas-e-pesos.html", selecionado=selecionado, rows=rows)
 
-    # If requested via GET, load page
+    # If requested via GET, reset selecionado and load page
+    if "selecionado" in session:
+        session.pop("selecionado")
     return render_template("notas-e-pesos.html")
 
 
@@ -440,13 +465,20 @@ def nova_senha():
         # New password must have at least 4 characters
         password = request.form.get("new-password")
         if len(password) < 4:
-            flash("A nova senha precisa ter pelo menos 4 caracteres.")
-            return render_template("nova-senha.html", password_attribute="autofocus")
+            flash("A nova senha precisa ter pelo menos 4 caracteres.", "error")
+            return render_template("nova-senha.html", password_attribute="autofocus", username=username)
 
         # Check for password confirmation
         confirm_password = request.form.get("confirm-password")
         if not confirm_password == password:
             flash("As senhas devem ser iguais", "error")
+            return render_template("nova-senha.html", password_attribute="autofocus", username=username)
+
+        # Check if user is registered
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
+        if not rows:
+            flash("Usuário não cadastrado.", "error")
+            return render_template("nova-senha.html", username_attribute="autofocus")
 
         # If no errors, change password
         password = generate_password_hash(password)
@@ -455,9 +487,9 @@ def nova_senha():
 
         # If user is logged in
         if user_session:
-            render_template("index.html")
+            return render_template("index.html")
         else:
-            render_template("login.html", username_attribute="autofocus")
+            return render_template("login.html", password_attribute="autofocus", username=username)
 
     return render_template("nova-senha.html", username_attribute="autofocus")
 
